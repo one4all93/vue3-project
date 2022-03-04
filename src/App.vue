@@ -21,7 +21,7 @@ export default {
     const onSubmit = () => {
       console.log(name.value);
     };
-
+    // commit test //
     // const updateName = (e) =>{
     //   name.value = e.target.value;
     // };
