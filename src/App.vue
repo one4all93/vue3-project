@@ -1,13 +1,47 @@
 <template>
-  <input 
-    type="text" 
-    v-model="name"
-    >
-  <button 
-    class="btn btn-primary" 
-    @click="onSubmit">
-  Click
-  </button>
+  <!-- <div v-if="toggle">true</div>
+  <div v-else>false</div> -->
+  <!-- <button @click="onToggle">Toggle</button> -->
+  <div class="container">
+    <h1 class="mt-5 mb-5"> To-Do List </h1>
+      <form @submit.prevent="onSubmit"> 
+        <div class="d-flex">
+
+            <div class="flex-grow-1 mr-2">
+            <input 
+              class="form-control"
+              type="text" 
+              v-model="todo"
+              placeholder="Type new to-do"
+            >
+
+          </div>
+          <div>
+
+            <button 
+              class="btn btn-primary" 
+              @click="onSubmit"
+              type="submit">
+              Add
+            </button>
+
+          </div>  
+
+        </div>
+
+        <div v-show="hasError" style="color:red;">This field cannot be empty</div>   
+
+      </form>
+      <div 
+        v-for="todo in todos"
+        :key="todo.id" 
+        class="card mt-2"
+      >
+        <div class="card-body p-2">
+          {{todo.subject}}
+        </div>
+      </div>
+  </div>
 </template>
 
 <script>
@@ -15,43 +49,40 @@ import { ref } from 'vue';
 
 export default {
   setup(){
-    // let name = '루페온_CodeSolver_블래스터';
-    const name = ref('CodeSolver');
+    const toggle = ref(false);
+    const todo = ref('');
+    const todos = ref([
+      {id: 1, subject: '휴대폰 사기'},
+      {id: 2, subject: '장보기'}
+    ]);
 
-    const onSubmit = () => {
-      console.log(name.value);
+    const hasError = ref(false);
+
+    const onSubmit = (e) => {
+      if(todo.value === ''){
+        hasError.value = true;
+      }else{
+        console.log(todo.value);
+        e.preventDefault();
+        todos.value.push({
+          id : Date.now(),
+          subject : todo.value
+        });
+        hasError.value = false;
+      }
     };
-    // commit test //
-    // const updateName = (e) =>{
-    //   name.value = e.target.value;
-    // };
-    // const name = ref({
-    //   id : 1
-    // });
 
-    // const greeting = (name) => {
-    //   return 'Hello, ' + name;
-    // };
-
-    // const greet = greeting(name);
-
-    const type = ref('number');
-    const nameClass = ref('');
-
-    // const updateName= () => {
-    //   // name = '검은매_CodeSolver';
-    //   // name.value = "이건 바뀐거야~";
-    //   // // console.log(name);
-    //   // type.value = 'text';
-    //   // nameClass.value = 'name';
-    // }
+    const onToggle = () => {
+      toggle.value = !toggle.value;
+    }
 
     return {
-      name,
-      // updateName,
-      type,
-      nameClass,
+      todo,
+      todos,
       onSubmit,
+      toggle,
+      onToggle,
+      hasError,
     };
   }
 }
