@@ -1,51 +1,44 @@
 <template>
   <div class="container">
+
+    <!-- <h4>count: {{count}}</h4>
+    <h4>double count computed: {{doubleCountComputed}}</h4>
+    <h4>double Count method: {{doubleCountMethod()}}</h4>
+    <button @click="count++">Add One</button> -->
+
     <h1>To-Do List</h1>
+
+    <input
+      class="form-control"
+      type="text" 
+      v-model="searchText"
+      placeholder="Search"
+    >
+
+    <hr>
     
     <TodoSimpleForm @add-todo="addTodo" />
     
-    <div v-if="!todos.length">
-      추가된 Todo가 없습니다
+    <div v-if="!filteredTodos.length">
+      There is nothing to display
     </div>
-    <div 
-      v-for="(todo, index) in todos"
-      :key="todo.id"
-      class="card mt-2"
-    >
-      <div class="card-body p-2 d-flex align-items-center">
-        <div class="form-check flex-grow-1">
-          <input 
-            class="form-check-input" 
-            type="checkbox"
-            v-model="todo.completed"
-          >
-          <label 
-            class="form-check-label"
-            :class="{ todo: todo.completed }"
-          >
-            {{ todo.subject }}
-          </label>
-        </div>
-        <div>
-          <button 
-            class="btn btn-danger btn-sm"
-            @click="deleteTodo(index)"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
+    <TodoList 
+      :todos="filteredTodos"
+      @toggle-todo="toggleTodo" 
+      @delete-todo="deleteTodo"
+     />
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import TodoSimpleForm from './components/TodoSimpleForm.vue';
+import TodoList from './components/TodoList.vue';
 
 export default {
   components: {
-    TodoSimpleForm
+    TodoSimpleForm,
+    TodoList,
   },
   setup() {
     
@@ -55,14 +48,47 @@ export default {
       todos.value.push(todo);
     };
 
+    const searchText = ref('');
+    const filteredTodos = computed(() =>{
+      if(searchText.value){
+        return todos.value.filter(todo => {
+          return todo.subject.includes(searchText.value);
+        });
+      }
+
+      return todos.value;
+    });
+
+    const toggleTodo = (index) => {
+      console.log(todos.value[index]);
+      todos.value[index].completed = !todos.value[index].completed
+    };
+
     const deleteTodo = (index) => {
       todos.value.splice(index, 1);
     };
+
+    // const count = ref(1);
+    // const doubleCountComputed = computed(() => {
+    //   console.log('computed');
+    //   return count.value * 2;
+    // });
+
+    // const doubleCountMethod = () => {
+    //   console.log('method');
+    //   return count.value * 2;
+    // };
 
     return {
       todos,
       addTodo,
       deleteTodo,
+      toggleTodo,
+      searchText,
+      filteredTodos,
+      // count,
+      // doubleCountComputed,
+      // doubleCountMethod,
     };
   }
 }
