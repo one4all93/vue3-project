@@ -18,6 +18,7 @@
     <hr>
     
     <TodoSimpleForm @add-todo="addTodo" />
+    <div style="color:red">{{ error }}</div>
     
     <div v-if="!filteredTodos.length">
       There is nothing to display
@@ -34,6 +35,7 @@
 import { ref, computed } from 'vue';
 import TodoSimpleForm from './components/TodoSimpleForm.vue';
 import TodoList from './components/TodoList.vue';
+import axios from 'axios';
 
 export default {
   components: {
@@ -43,9 +45,54 @@ export default {
   setup() {
     
     const todos = ref([]);
+    const error = ref('');
 
-    const addTodo = (todo) => {
-      todos.value.push(todo);
+    const getTodos = async () => {
+      try{
+        const res = await axios.get('http://localhost:3000/todos');
+        todos.value = res.data;
+      }catch(err){
+        error.value = 'Something went Wrong!!';
+        console.log(err);
+      }
+    }
+
+    getTodos();
+
+    // .then 사용 시
+    // const addTodo = (todo) => {
+    //   error.value = '';
+    //   console.log('start');
+    //   // 데이터베이스 투두를 지정
+    //   axios.post('http://localhost:3000/todos',{
+    //     subject: todo.subject,
+    //     completed: todo.completed,
+    //   }).then(res =>{
+    //     console.log(res);
+    //     todos.value.push(res.data);
+    //   }).catch(err => {
+    //     console.log(err);
+    //     error.value = 'Something went Wrong!!';
+    //   });
+    //   console.log('hello');
+    // };
+
+    //await 사용 시
+    const addTodo = async (todo) => {
+      error.value = '';
+      // console.log('start');
+      // 데이터베이스 투두를 지정
+      try {
+        const res = await axios.post('http://localhost:3000/todos',{
+          subject: todo.subject,
+          completed: todo.completed,
+        });
+        // console.log(res);
+        todos.value.push(res.data);
+      }catch (err){
+        error.value = 'Something went Wrong!!';
+      }
+      // console.log('hello');
     };
 
     const searchText = ref('');
@@ -65,6 +112,8 @@ export default {
     };
 
     const deleteTodo = (index) => {
+      const id = todos.value[index].id;
+      axios.delete('http://localhost:3000/todos');
       todos.value.splice(index, 1);
     };
 
@@ -86,6 +135,8 @@ export default {
       toggleTodo,
       searchText,
       filteredTodos,
+      error,
+      getTodos,
       // count,
       // doubleCountComputed,
       // doubleCountMethod,
