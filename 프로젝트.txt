@@ -1,0 +1,4 @@
+// db.json -> 서버 실행
+json-server --watch db.json
+
+//

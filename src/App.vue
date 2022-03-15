@@ -1,253 +1,37 @@
 <template>
-  <div class="container">
 
-    <!-- <h4>count: {{count}}</h4>
-    <h4>double count computed: {{doubleCountComputed}}</h4>
-    <h4>double Count method: {{doubleCountMethod()}}</h4>
-    <button @click="count++">Add One</button> -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <router-link class="navbar-brand" :to="{ name: 'Home'}"><b>CodeSolver_Todo</b></router-link>
 
-    <h1>To-Do List</h1>
-
-    <input
-      class="form-control"
-      type="text" 
-      v-model="searchText"
-      placeholder="Search"
-      @keyup.enter="searchTodo"
-    >
-
-    <hr>
-    
-    <TodoSimpleForm @add-todo="addTodo" />
-    <div style="color:red">{{ error }}</div>
-    
-    <div v-if="!todos.length">
-      There is nothing to display
-    </div>
-    <TodoList 
-      :todos="todos"
-      @toggle-todo="toggleTodo" 
-      @delete-todo="deleteTodo"
-    />
-
-    <hr>
-
-    <!-- <PageComponent 
-      @currentPage="getTodos"
-    /> -->
-    <nav aria-label="Page navigation example">
-      <ul class="pagination">
-        <li class="page-item" v-if="currentPage !== 1">
-          <a style="cursor: pointer" class="page-link" @click="getTodos(currentPage - 1)">
-            Previous
-          </a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <router-link class="nav-link active" aria-current="page" :to="{ name: 'Home'}">Home</router-link>
         </li>
-        <li 
-          class="page-item" 
-          v-for="page in numberOfPages" 
-          :key="page" 
-          :class="currentPage === page ? 'active' : ''">
-          <a style="cursor: pointer" class="page-link" @click="getTodos(page)">
-            {{page}}
-          </a>
-        </li>
-        <li class="page-item" v-if="numberOfPages !== currentPage">
-          <a style="cursor: pointer" class="page-link" @click="getTodos(currentPage + 1)">
-            Next
-          </a>
+        <li class="nav-item">
+          <router-link class="nav-link active" aria-current="page" :to="{ name: 'Todos'}">Todos</router-link>
         </li>
       </ul>
-    </nav> 
 
+    </div>
   </div>
+</nav>
+
+<br>
+
+<!-- 라우터 뷰 -->
+<div class="container">
+  <router-view/>
+</div>
 </template>
 
 <script>
-import { ref, computed, watch } from 'vue';
-import TodoSimpleForm from './components/TodoSimpleForm.vue';
-import TodoList from './components/TodoList.vue';
-import axios from 'axios';
-// import PageComponent from './components/PageComponent.vue';
-
 export default {
-  components: {
-    TodoSimpleForm,
-    TodoList,
-    // PageComponent,
-  },
-  setup() {
-    
-    const todos = ref([]);
-    const error = ref('');
-    const searchText = ref('');
 
-    const numberOfTodos = ref(0);
-    const limit = 5;
-    const currentPage = ref(1);
-
-    // watchEffect(() => {
-    //   console.log(currentPage.value);
-    //   console.log(numberOfTodos.value);
-    // })
-
-    const numberOfPages = computed(() => {
-      return Math.ceil(numberOfTodos.value/limit);
-    });
-
-    // const a = reactive({
-    //   b : 1
-    // });
-
-    //   watchEffect(() => {
-    //     console.log(a.b);
-    //   });
-    //   a.b = 4;
-
-    // watchEffect(() => {
-    //   console.log(numberOfPages.value);
-    // })
-
-    const getTodos = async (page=currentPage.value) => {
-      currentPage.value = page;
-      try{
-        const res = await axios.get(
-          `http://localhost:3000/todos?_sort=id&_order=desc&subject_like=${searchText.value}&_page=${page}&_limit=${limit}`
-        );
-        numberOfTodos.value = res.headers['x-total-count'];
-        todos.value = res.data;
-      }catch(err){
-        error.value = 'Something went Wrong!!';
-        console.log(err);
-      }
-    }
-
-    getTodos();
-
-    // .then 사용 시
-    // const addTodo = (todo) => {
-    //   error.value = '';
-    //   console.log('start');
-    //   // 데이터베이스 투두를 지정
-    //   axios.post('http://localhost:3000/todos',{
-    //     subject: todo.subject,
-    //     completed: todo.completed,
-    //   }).then(res =>{
-    //     console.log(res);
-    //     todos.value.push(res.data);
-    //   }).catch(err => {
-    //     console.log(err);
-    //     error.value = 'Something went Wrong!!';
-    //   });
-    //   console.log('hello');
-    // };
-
-    //await 사용 시
-    const addTodo = async (todo) => {
-      error.value = '';
-      // console.log('start');
-      // 데이터베이스 투두를 지정
-      try {
-          await axios.post('http://localhost:3000/todos',{
-          subject: todo.subject,
-          completed: todo.completed,
-        });
-        getTodos(1);
-        // console.log(res);
-        // todos.value.push(res.data);
-      }catch (err){
-        error.value = 'Something went Wrong!!';
-      }
-      // console.log('hello');
-    };
-
-
-    let timeout = null;
-    const searchTodo = () => {
-      clearTimeout(timeout);
-      getTodos(1);
-    }
-    // 검색창
-    watch(searchText, () =>{
-      // console.log(current,prev);
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        getTodos(1);
-      }, 2000);
-    })
-    // const filteredTodos = computed(() =>{
-    //   if(searchText.value){
-    //     return todos.value.filter(todo => {
-    //       return todo.subject.includes(searchText.value);
-    //     });
-    //   }
-
-    //   return todos.value;
-    // });
-
-    //
-    const toggleTodo = async (index) => {
-      error.value = '';
-      const id = todos.value[index].id;
-      try{
-        await axios.patch('http://localhost:3000/todos/'+ id, {
-          completed: !todos.value[index].completed
-        });
-
-        todos.value[index].completed = !todos.value[index].completed
-      }catch(err){
-        console.log(err);
-        error.value = 'Something went Wrong!!';
-      }
-    };
-
-    const deleteTodo = async (index) => {
-      error.value = '';
-      const id = todos.value[index].id;
-      try {
-        await axios.delete('http://localhost:3000/todos/' + id);
-        // todos.value.splice(index, 1);
-        getTodos(1);
-        console.log("axios.delete");
-      } catch (err) {
-        console.log("TodoSimpleForm.vue_deleteTodo!에러!");
-        error.value = 'Something went Wrong!!';
-      }
-    };
-
-    // const count = ref(1);
-    // const doubleCountComputed = computed(() => {
-    //   console.log('computed');
-    //   return count.value * 2;
-    // });
-
-    // const doubleCountMethod = () => {
-    //   console.log('method');
-    //   return count.value * 2;
-    // };
-
-    return {
-      todos,
-      addTodo,
-      deleteTodo,
-      toggleTodo,
-      searchText,
-      // filteredTodos,
-      error,
-      getTodos,
-      numberOfPages,
-      currentPage,
-      searchTodo,
-      // count,
-      // doubleCountComputed,
-      // doubleCountMethod,
-    };
-  }
 }
 </script>
 
 <style>
-  .todo {
-    color: gray;
-    text-decoration: line-through;
-  }
+
 </style>
