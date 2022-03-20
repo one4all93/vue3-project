@@ -6,8 +6,12 @@
     <h4>double count computed: {{doubleCountComputed}}</h4>
     <h4>double Count method: {{doubleCountMethod()}}</h4>
     <button @click="count++">Add One</button> -->
-
-    <h1>To-Do List</h1>
+    <div class="d-flex justify-content-between mb-3">
+      <h1>To-Do List</h1>
+      <button class="btn btn-primary"
+       @click="moveToCreatePage()"
+      >Create Todo</button>
+    </div>
 
     <input
       class="form-control"
@@ -18,9 +22,6 @@
     >
 
     <hr>
-    
-    <TodoSimpleForm @add-todo="addTodo" />
-    <div style="color:red">{{ error }}</div>
     
     <div v-if="!todos.length">
       There is nothing to display
@@ -61,6 +62,7 @@
     </nav> 
 
   </div>
+  <Toast v-if="showToast" :msg="toastMessage" :type="toastAlertType" />
 </template>
 
 <script>
@@ -68,15 +70,20 @@ import { ref, computed, watch } from 'vue';
 import TodoSimpleForm from '@/components/TodoSimpleForm.vue';
 import TodoList from '@/components/TodoList.vue';
 import axios from 'axios';
+import Toast from '@/components/Toast.vue';
+import { useToast } from '@/hooks/toast';
+import { useRouter} from 'vue-router';
 // import PageComponent from './components/PageComponent.vue';
 
 export default {
   components: {
-    TodoSimpleForm,
     TodoList,
+    Toast,
     // PageComponent,
   },
   setup() {
+
+    const router = useRouter();
     
     const todos = ref([]);
     const error = ref('');
@@ -85,6 +92,13 @@ export default {
     const numberOfTodos = ref(0);
     const limit = 5;
     const currentPage = ref(1);
+
+    const {
+      toastMessage,
+      toastAlertType,
+      showToast,
+      triggerToast
+    } = useToast();
 
     // watchEffect(() => {
     //   console.log(currentPage.value);
@@ -117,7 +131,7 @@ export default {
         numberOfTodos.value = res.headers['x-total-count'];
         todos.value = res.data;
       }catch(err){
-        error.value = 'Something went Wrong!!';
+        triggerToast('Something went Wrong!!', 'danger');
         console.log(err);
       }
     }
@@ -156,7 +170,7 @@ export default {
         // console.log(res);
         // todos.value.push(res.data);
       }catch (err){
-        error.value = 'Something went Wrong!!';
+        triggerToast('Something went Wrong!!', 'danger');
       }
       // console.log('hello');
     };
@@ -197,7 +211,7 @@ export default {
         todos.value[index].completed = checked
       }catch(err){
         console.log(err);
-        error.value = 'Something went Wrong!!';
+        triggerToast('Something went Wrong!!', 'danger');
       }
     };
 
@@ -211,9 +225,27 @@ export default {
         console.log("axios.delete");
       } catch (err) {
         console.log("TodoSimpleForm.vue_deleteTodo!에러!");
-        error.value = 'Something went Wrong!!';
+        triggerToast('Something went Wrong!!', 'danger');
+        // error.value = 'Something went Wrong!!';
       }
     };
+
+    // const toastMessage = ref('');
+    // const toastAlertType = ref('');
+    // const showToast = ref(false);
+    // const toastTimeout = ref(null);
+
+    // const triggerToast = (msg, type = 'success') => {
+    //       toastMessage.value = msg;
+    //       toastAlertType.value = type;
+    //       showToast.value = true;
+    //       toastTimeout.value = setTimeout(() => {
+    //         console.log('hello');
+    //         toastMessage.value = '';
+    //         toastAlertType.value = '';
+    //         showToast.value = false;
+    //       }, 5000)
+    //     } 
 
     // const count = ref(1);
     // const doubleCountComputed = computed(() => {
@@ -225,6 +257,12 @@ export default {
     //   console.log('method');
     //   return count.value * 2;
     // };
+
+    const moveToCreatePage = () => {
+      router.push({
+        name: 'TodoCreate',
+      });
+    }
 
     return {
       todos,
@@ -238,6 +276,12 @@ export default {
       numberOfPages,
       currentPage,
       searchTodo,
+      toastMessage,
+      toastAlertType,
+      showToast,
+      triggerToast,
+      moveToCreatePage,
+
       // count,
       // doubleCountComputed,
       // doubleCountMethod,
