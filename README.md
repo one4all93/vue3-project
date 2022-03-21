@@ -1,5 +1,7 @@
 # vue3-project
 
+## 첫 vue.js 공부 프로젝트입니다!
+
 ## Project setup
 ```
 npm install
