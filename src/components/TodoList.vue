@@ -9,38 +9,41 @@
         style="cursor: pointer"
         @click="moveToPage(todo.id)"
       >
-        <div class="form-check flex-grow-1">
+        <div class="flex-grow-1">
           <input 
-            class="form-check-input" 
+            class="ml-2 mr-2" 
             type="checkbox"
             :checked="todo.completed"
             @change="toggleTodo(index, $event)"
             @click.stop
           >
-          <label 
-            class="form-check-label"
-            :class="{ todo: todo.completed }"
-          >
+          <span :class="{ todo: todo.completed }">
             {{ todo.subject }}
-          </label>
+          </span>
         </div>
         <div>
           <button 
             class="btn btn-danger btn-sm"
-            @click.stop="deleteTodo(index)"
+            @click.stop="openModal(todo.id)"
           >
             Delete
           </button>
         </div>
       </div>
     </div>
+    <Modal v-if="showModal" @close="closeModal"/>
 </template>
 
 <script>
 // import { watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
+import Modal from '@/components/Modal.vue';
+import {ref} from 'vue';
 
 export default {
+  components: {
+    Modal,
+  },
     props : {
         todos:{
             type: Array,
@@ -53,10 +56,22 @@ export default {
         //   console.log(props.todos.length);
         // })
         const router = useRouter();
+        const showModal = ref(false);
+        const todoDeleteId = ref(null);
 
         const toggleTodo = (index, event) => {
             emit('toggle-todo', index, event.target.checked);
         };
+
+        const openModal = (id) => {
+          todoDeleteId.value = id;
+          showModal.value = true;
+        }
+
+        const closeModal = (id) => {
+          todoDeleteId.value = null;
+          showModal.value = false;
+        }
 
         const deleteTodo = (index) => {
             emit('delete-todo', index);
@@ -79,9 +94,12 @@ export default {
             deleteTodo,
             moveToPage,
             router,
+            showModal,
+            openModal,
+            closeModal,
 
-        }
-    }
+
+        }    }
 }
 </script>
 
