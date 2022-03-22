@@ -1,48 +1,61 @@
 <template>
-    <div 
+    <!-- <div 
       v-for="(todo, index) in todos"
       :key="todo.id"
       class="card mt-2"
+    > -->
+    <List 
+      :items="todos"
     >
-      <div 
-        class="card-body p-2 d-flex align-items-center"
-        style="cursor: pointer"
-        @click="moveToPage(todo.id)"
-      >
-        <div class="flex-grow-1">
-          <input 
-            class="ml-2 mr-2" 
-            type="checkbox"
-            :checked="todo.completed"
-            @change="toggleTodo(index, $event)"
-            @click.stop
-          >
-          <span :class="{ todo: todo.completed }">
-            {{ todo.subject }}
-          </span>
+      <template #default="{ item, index }">
+        <div 
+          class="card-body p-2 d-flex align-items-center"
+          style="cursor: pointer"
+          @click="moveToPage(item.id)"
+        >
+          <div class="flex-grow-1">
+            <input 
+              class="ml-2 mr-2" 
+              type="checkbox"
+              :checked="item.completed"
+              @change="toggleTodo(index, $event)"
+              @click.stop
+            >
+            <span :class="{ todo: item.completed }">
+              {{ item.subject }}
+            </span>
+          </div>
+          <div>
+            <button 
+              class="btn btn-danger btn-sm"
+              @click.stop="openModal(item.id)"
+            >
+              Delete
+            </button>
+          </div>
         </div>
-        <div>
-          <button 
-            class="btn btn-danger btn-sm"
-            @click.stop="openModal(todo.id)"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-    <Modal v-if="showModal" @close="closeModal"/>
+      </template>
+    </List>
+    <!-- </div> -->
+    <teleport to="#modal">
+      <Modal v-if="showModal" 
+      @delete="deleteTodo" 
+      @close="closeModal"
+      />
+    </teleport>
 </template>
 
 <script>
 // import { watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
-import Modal from '@/components/Modal.vue';
+import Modal from '@/components/DeleteModal.vue';
 import {ref} from 'vue';
+import List from '@/components/List.vue';
 
 export default {
   components: {
     Modal,
+    List,
   },
     props : {
         todos:{
@@ -68,13 +81,15 @@ export default {
           showModal.value = true;
         }
 
-        const closeModal = (id) => {
+        const closeModal = () => {
           todoDeleteId.value = null;
           showModal.value = false;
         }
 
-        const deleteTodo = (index) => {
-            emit('delete-todo', index);
+        const deleteTodo = () => {
+            emit('delete-todo', todoDeleteId.value);
+            showModal.value = false;
+            todoDeleteId.value = null;
         };
 
         const moveToPage = (todoId) => {

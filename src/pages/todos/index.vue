@@ -69,7 +69,7 @@
 import { ref, computed, watch } from 'vue';
 import TodoSimpleForm from '@/components/TodoSimpleForm.vue';
 import TodoList from '@/components/TodoList.vue';
-import axios from 'axios';
+import axios from '@/axios';
 import Toast from '@/components/Toast.vue';
 import { useToast } from '@/hooks/toast';
 import { useRouter} from 'vue-router';
@@ -126,7 +126,7 @@ export default {
       currentPage.value = page;
       try{
         const res = await axios.get(
-          `http://localhost:3000/todos?_sort=id&_order=desc&subject_like=${searchText.value}&_page=${page}&_limit=${limit}`
+          `todos?_sort=id&_order=desc&subject_like=${searchText.value}&_page=${page}&_limit=${limit}`
         );
         numberOfTodos.value = res.headers['x-total-count'];
         todos.value = res.data;
@@ -162,7 +162,7 @@ export default {
       // console.log('start');
       // 데이터베이스 투두를 지정
       try {
-          await axios.post('http://localhost:3000/todos',{
+          await axios.post('todos',{
           subject: todo.subject,
           completed: todo.completed,
         });
@@ -204,7 +204,7 @@ export default {
       error.value = '';
       const id = todos.value[index].id;
       try{
-        await axios.patch('http://localhost:3000/todos/'+ id, {
+        await axios.patch('todos/'+ id, {
           completed: checked
         });
 
@@ -215,14 +215,14 @@ export default {
       }
     };
 
-    const deleteTodo = async (index) => {
+    const deleteTodo = async (id) => {
       error.value = '';
-      const id = todos.value[index].id;
       try {
-        await axios.delete('http://localhost:3000/todos/' + id);
+        await axios.delete('todos/' + id);
         // todos.value.splice(index, 1);
         getTodos(1);
         console.log("axios.delete");
+
       } catch (err) {
         console.log("TodoSimpleForm.vue_deleteTodo!에러!");
         triggerToast('Something went Wrong!!', 'danger');

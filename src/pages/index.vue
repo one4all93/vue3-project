@@ -1,10 +1,21 @@
 <template>
   <div>Home Page</div>
+  <div>{{ count }}</div>
+  <button @click="count++" class="btn btn-primary">Add</button>
 </template>
 
 <script>
-export default {
+import { useCount } from '@/hooks/count.js';
 
+export default {
+  setup(){
+    const { count } = useCount();
+    console.log(count);
+
+    return{
+      count
+    }
+  }
 }
 </script>
 
